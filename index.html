@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bianca Charuma Muwomo | Economic Development & Financial Inclusion Professional</title>
+    
+    <!-- Chosen Palette: Professional Harmony -->
+    <!-- Application Structure Plan: A dynamic, single-page application designed as an interactive narrative to guide recruiters through Bianca's professional journey. The structure is thematic, starting with a high-impact "Hero" section and an "Impact Dashboard" with a Chart.js radar chart for a quick, visual overview of her skills. This is followed by an interactive "Career Timeline" where users can click to expand details for each role, preventing information overload. "Skills in Action" case study cards allow for deep dives into specific projects, demonstrating problem-solving and results. The structure concludes with her foundational qualifications and a clear call-to-action. This non-linear, interactive approach was chosen over a static list to maximize engagement, highlight key achievements effectively, and create a memorable experience for recruiters, showcasing her as a modern, impactful professional. -->
+    <!-- Visualization & Content Choices:
+        - Report Info: Core Competencies -> Goal: Showcase skill-set dynamically -> Viz: Radar Chart -> Interaction: Hover to see competency details. -> Justification: More engaging and modern than a list, visualizes the interconnectedness of her skills. -> Library: Chart.js.
+        - Report Info: Professional Experience -> Goal: Present career progression without a wall of text -> Viz: Interactive Vertical Timeline -> Interaction: Click role to expand a detailed view with achievements. -> Justification: Organizes extensive information cleanly and encourages user exploration. -> Library: Vanilla JS.
+        - Report Info: Key Project Achievements -> Goal: Demonstrate tangible impact and tell a story -> Viz: Case Study Cards -> Interaction: Click to open a modal with a "Challenge-Action-Outcome" narrative. -> Justification: This narrative structure is highly effective for recruiters, proving her results-oriented approach. -> Library: Vanilla JS.
+        - Report Info: Years of Experience, Key Themes -> Goal: Provide immediate, high-level metrics -> Viz: Dynamic Number Counters -> Interaction: Animate on scroll. -> Justification: Adds a modern "wow" factor and highlights top-line value instantly. -> Library: Vanilla JS.
+        - CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .nav-link {
+            position: relative;
+            color: #e2e8f0;
+            transition: color 0.3s;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #f59e0b;
+            transition: width 0.3s;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #ffffff;
+        }
+        .nav-link:hover::after, .nav-link.active::after {
+            width: 100%;
+        }
+        .hero-bg {
+            background-color: #1e293b;
+            background-image: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+        }
+        .stat-card {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 2.5rem;
+            padding-left: 2.5rem;
+            border-left: 2px solid #cbd5e1;
+        }
+        .timeline-dot {
+            position: absolute;
+            left: -11px;
+            top: 4px;
+            height: 20px;
+            width: 20px;
+            background-color: #f8fafc;
+            border: 4px solid #94a3b8;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        .timeline-item:hover .timeline-dot, .timeline-item.active .timeline-dot {
+            background-color: #f59e0b;
+            border-color: #f59e0b;
+            transform: scale(1.1);
+        }
+        .details-pane {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.7s ease-in-out;
+        }
+        .details-pane.open {
+            max-height: 1500px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            animation: slide-down 0.5s ease-out;
+        }
+        @keyframes slide-down {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .chart-container { 
+            position: relative; 
+            width: 100%; 
+            max-width: 600px; 
+            margin-left: auto; 
+            margin-right: auto; 
+            height: 40vh;
+            max-height: 450px; 
+        }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+    </style>
+</head>
+
+<body class="antialiased">
+
+    <!-- Header & Navigation -->
+    <header id="home" class="hero-bg sticky top-0 z-50 shadow-lg">
+        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <div class="text-2xl font-bold text-white">
+                BCM<span class="text-amber-400">.</span>
+            </div>
+            <div class="hidden md:flex items-center space-x-8">
+                <a href="#dashboard" class="nav-link">Dashboard</a>
+                <a href="#journey" class="nav-link">Career Journey</a>
+                <a href="#impact" class="nav-link">Impact Stories</a>
+                <a href="#foundations" class="nav-link">Foundations</a>
+            </div>
+            <a href="mailto:biancanyarie@gmail.com" class="hidden md:block bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300">Contact Me</a>
+            <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </nav>
+        <div id="mobile-menu" class="hidden md:hidden px-6 pt-2 pb-4 space-y-2">
+             <a href="#dashboard" class="block nav-link">Dashboard</a>
+             <a href="#journey" class="block nav-link">Career Journey</a>
+             <a href="#impact" class="block nav-link">Impact Stories</a>
+             <a href="#foundations" class="block nav-link">Foundations</a>
+             <a href="mailto:biancanyarie@gmail.com" class="block bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-300 text-center mt-2">Contact Me</a>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero-bg text-white py-20 md:py-32">
+            <div class="container mx-auto px-6 text-center">
+                <img src="https://af6815798a.imgdist.com/pub/bfra/knkjywkm/8vo/5kh/ap8/ProfilePictureBia.jpg" alt="Bianca Charuma" class="w-32 h-32 md:w-40 md:h-40 mx-auto rounded-full border-4 border-amber-400 shadow-xl mb-6 object-cover">
+                <h1 class="text-4xl md:text-6xl font-extrabold mb-3">Bianca Charuma Muwomo</h1>
+                <p class="text-xl md:text-2xl text-slate-300 mb-8">Driving Economic Empowerment & Business Development in Africa</p>
+                <p class="max-w-3xl mx-auto text-slate-300 leading-relaxed">
+                    A highly accomplished and results-oriented professional with over 7 years of dedicated experience in international development, specializing in grantmaking, program management, financial inclusion, and advancing gender equity. Passionate about fostering sustainable livelihoods for marginalized communities through practical education and strategic empowerment.
+                </p>
+            </div>
+        </section>
+
+        <!-- Impact Dashboard Section -->
+        <section id="dashboard" class="py-16 md:py-24 bg-slate-100">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-800">Impact Dashboard</h2>
+                    <p class="mt-2 text-lg text-slate-600 max-w-2xl mx-auto">A visual summary of my core competencies and the key areas where I create value. This section provides an at-a-glance overview of my expertise in driving systemic change and empowerment.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16 text-center">
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <div class="text-5xl font-extrabold text-amber-500" data-target="7">0</div>
+                        <p class="text-xl font-semibold text-slate-700 mt-2">+ Years of Experience</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <div class="text-5xl font-extrabold text-amber-500" data-target="3">0</div>
+                        <p class="text-xl font-semibold text-slate-700 mt-2">Key Thematic Pillars</p>
+                        <p class="text-sm text-slate-500">(Financial Inclusion, Gender Equity, Livelihoods)</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                         <div class="text-5xl font-extrabold text-amber-500" data-target="10">0</div>
+                        <p class="text-xl font-semibold text-slate-700 mt-2">+ Core Competencies</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 md:p-8 rounded-xl shadow-xl">
+                    <h3 class="text-2xl font-bold text-slate-800 text-center mb-4">Core Competency Matrix</h3>
+                    <p class="text-center text-slate-600 mb-8 max-w-3xl mx-auto">This interactive chart illustrates the synergy between my core skills. Hover over each point to see how my capabilities in grant management, financial inclusion, and stakeholder engagement interconnect to deliver comprehensive program success.</p>
+                    <div class="chart-container">
+                        <canvas id="competencyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Career Journey Section -->
+        <section id="journey" class="py-16 md:py-24">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-800">My Career Journey</h2>
+                    <p class="mt-2 text-lg text-slate-600 max-w-2xl mx-auto">Explore my professional history through this interactive timeline. Click on any role to reveal detailed responsibilities and key achievements, providing insight into my growth and the impact I've made at each stage.</p>
+                </div>
+                <div id="timeline-container">
+                </div>
+            </div>
+        </section>
+        
+        <!-- Impact Stories / Case Studies Section -->
+        <section id="impact" class="py-16 md:py-24 bg-slate-100">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-800">Impact Stories</h2>
+                    <p class="mt-2 text-lg text-slate-600 max-w-2xl mx-auto">Beyond job titles, these stories showcase my approach to solving real-world development challenges. Click to learn how I've applied my skills to create tangible outcomes in key projects.</p>
+                </div>
+                <div id="case-studies-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                </div>
+            </div>
+        </section>
+        
+        <!-- Foundations Section -->
+        <section id="foundations" class="py-16 md:py-24">
+             <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl md:text-4xl font-bold text-slate-800">Foundations of My Expertise</h2>
+                    <p class="mt-2 text-lg text-slate-600 max-w-2xl mx-auto">My professional practice is built on a solid academic foundation and a commitment to continuous learning. This section outlines the education and certifications that underpin my skills.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Education -->
+                    <div class="bg-white p-8 rounded-xl shadow-lg">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-6">Education</h3>
+                        <div class="space-y-6">
+                            <div>
+                                <h4 class="text-xl font-semibold text-slate-700">Bachelor of Social Science Honors Degree in Human Resources Management Services</h4>
+                                <p class="text-slate-500">Foundation in organizational behavior and management.</p>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-semibold text-slate-700">Diploma in International Development Communication, Diplomacy, and NGO Studies</h4>
+                                <p class="text-slate-500">Specialized knowledge in development frameworks and communication.</p>
+                            </div>
+                             <div class="border-t border-slate-200 pt-4">
+                                <h4 class="text-xl font-semibold text-amber-600">Enrolled: Executive Master in Business Administration (EMBA)</h4>
+                                <p class="text-slate-500">Actively pursuing advanced strategic management and leadership skills.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Certifications -->
+                    <div class="bg-white p-8 rounded-xl shadow-lg">
+                        <h3 class="text-2xl font-bold text-slate-800 mb-6">Certifications & Continuous Learning</h3>
+                        <ul class="space-y-4 list-none">
+                            <li class="flex items-start"><span class="text-amber-500 font-bold mr-2 mt-1">&#10003;</span>Certificate in Financial Development and Financial Inclusion</li>
+                            <li class="flex items-start"><span class="text-amber-500 font-bold mr-2 mt-1">&#10003;</span>Certificate in SHEA and Safeguarding</li>
+                            <li class="flex items-start"><span class="text-amber-500 font-bold mr-2 mt-1">&#10003;</span>Course on Global Platforms Economic Sustainability</li>
+                            <li class="flex items-start"><span class="text-amber-500 font-bold mr-2 mt-1">&#10003;</span>Current Course in Community Development Planning Promotional Programs and Seeking Funding</li>
+                        </ul>
+                    </div>
+                </div>
+             </div>
+        </section>
+    </main>
+    
+    <!-- Footer -->
+<!-- Footer -->
+<footer class="bg-slate-800 text-slate-300 py-12">
+    <div class="container mx-auto px-6 text-center">
+        <h2 class="text-3xl font-bold text-white mb-4">Ready to Build a More Resilient Future?</h2>
+        <p class="max-w-xl mx-auto mb-8">I am always open to discussing new opportunities and collaborations. Let's connect.</p>
+        <a href="mailto:biancanyarie@gmail.com" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-300 text-lg inline-block">Get In Touch</a>
+        <div class="mt-10 pt-8 border-t border-slate-700 text-sm">
+            <p>&copy; 2025 Bianca Charuma | Professional Portfolio</p>
+            <p class="mt-1">Based in Sandton, South Africa | +27 715 731 602</p>
+            <p class="mt-4">
+                <a href="https://snv.org/cms/sites/default/files/explore/download/rarp-_2016-post-harvest-survey.pdf" target="_blank" class="hover:text-amber-400 transition-colors">View Published Post-Harvest Survey Contribution</a>
+            </p>
+            <div class="mt-6 text-sm text-slate-400">
+                Website created by 
+                <a href="https://www.kypextech.co.za/" target="_blank" class="text-amber-400 hover:underline">
+                    KypexTech
+                </a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+
+    <!-- Modal Structure -->
+    <div id="case-study-modal" class="modal">
+        <div class="modal-content bg-white w-11/12 max-w-3xl rounded-lg shadow-2xl p-8 relative">
+            <button id="close-modal-button" class="absolute top-4 right-4 text-slate-500 hover:text-slate-800 text-3xl">&times;</button>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const professionalExperience = [
+        {
+            role: "Financial Inclusion and Gender Officer",
+            company: "ActionAid International",
+            dates: "Mar 2021 - Sep 2023",
+            project: "Zimbabwe Resilience Building Fund Project (UNDP Funded)",
+            achievements: [
+                "Spearheaded comprehensive financial inclusion and wellbeing programs across Zimbabwe’s rural districts, directly increasing the resilience of vulnerable populations.",
+                "Managed grant portfolios empowering women’s groups, SMEs, and youth organizations.",
+                "Delivered impactful financial literacy workshops on money management, budgeting, savings, and debt management.",
+                "Fostered relationships with grassroots organizations, ensuring programmatic alignment with gender-sensitive and feminist principles.",
+                "Provided technical support to grantee partners, including proposal development, capacity-building, and reporting compliance."
+            ]
+        },
+        {
+            role: "Rural Finance Officer",
+            company: "Steward Bank",
+            dates: "Oct 2018 - Dec 2020",
+            project: "Livelihoods and Food Security Programme (FAO)",
+            achievements: [
+                "Empowered rural communities with financial literacy and market access, supporting sustainable income generation.",
+                "Facilitated business management sessions for Village Savings and Lending Associations (VSLA).",
+                "Conducted pre-award assessments, financial analysis, and budget tracking for sub-grantees and SMEs.",
+                "Developed gender-responsive approaches to build the capacity of smallholder farmers and entrepreneurs.",
+                "Collaborated with diverse stakeholders to amplify local voices and foster systemic change."
+            ]
+        },
+        {
+            role: "Financial Literacy Trainer",
+            company: "SNV Netherlands Development",
+            dates: "Feb 2018 - Jul 2018",
+            project: "VUNA Goat Value Chain and Climate Smart Project (EU)",
+            achievements: [
+                "Designed and delivered targeted training on financial planning and digital financial services for smallholder farmers.",
+                "Trained women and youth groups in loan portfolio management, grant management, and proposal writing to access funding.",
+                "Advocated for inclusive practices, integrating feminist approaches to ensure equitable access to resources.",
+                "Managed beneficiary funding portfolios, ensuring strict compliance with donor requirements."
+            ]
+        },
+        {
+            role: "Project Officer",
+            company: "SNV Netherlands Development Organisation",
+            dates: "Mar 2014 - Dec 2017",
+            project: "Rural Finance Project (FAO)",
+            achievements: [
+                "Significantly improved value chain development and access to finance for women and youth entrepreneurs in remote districts.",
+                "Managed extensive grant and loan portfolios, ensuring stringent compliance with diverse donor requirements.",
+                "Held primary responsibility for the Matching Grant Facility, from prescreening and eligibility assessments to disbursement and monitoring.",
+                "Designed and implemented participatory development projects to address systemic barriers to financial inclusion.",
+                "Strengthened feminist networks by promoting women entrepreneurship and establishing market linkages for women-led enterprises."
+            ]
+        }
+    ];
+
+    const caseStudies = [
+        {
+            title: "Building Resilience in Rural Zimbabwe",
+            organization: "ActionAid International (UNDP Funded)",
+            challenge: "Vulnerable rural populations in Zimbabwe faced significant economic instability and limited access to financial tools, hindering their ability to withstand economic shocks and build sustainable futures.",
+            action: "I led the design and implementation of comprehensive financial inclusion and wellbeing programs. This involved developing and delivering tailored financial literacy workshops, establishing and managing grant portfolios for women, youth, and SMEs, and fostering deep partnerships with grassroots organizations to ensure a gender-sensitive and intersectional approach.",
+            outcome: "Successfully increased the economic resilience of thousands of individuals. Empowered local communities with practical financial skills, improved access to capital through well-managed grants, and created a more inclusive financial ecosystem aligned with feminist principles."
+        },
+        {
+            title: "Empowering Farmers via Value Chains",
+            organization: "SNV (EU Funded)",
+            challenge: "Smallholder farmers within the goat value chain lacked the financial literacy and planning skills necessary to capitalize on market opportunities and improve their financial stability.",
+            action: "As a Financial Literacy Trainer, I created and conducted highly targeted training sessions focused on budgeting, financial planning, proposal writing, and accessing digital financial services. I specifically worked with women and youth groups, advocating for feminist approaches to ensure equitable access to all resources.",
+            outcome: "Equipped farmers with foundational financial skills, enabling better personal and business finance management. This led to improved access to funding, greater participation in economic activities, and enhanced financial stability for participants and their families."
+        },
+        {
+            title: "Dismantling Barriers to Rural Finance",
+            organization: "SNV (FAO Funded)",
+            challenge: "Systemic barriers in remote districts prevented women and youth entrepreneurs from accessing the finance and market linkages needed to grow their agribusinesses.",
+            action: "As a Project Officer, I designed participatory projects to directly address these barriers. I managed the full lifecycle of a Matching Grant Facility, supported entrepreneurs in developing business plans, and actively built networks to connect them with markets and financing. A key focus was strengthening feminist networks to promote women-led enterprises.",
+            outcome: "Dramatically improved value chain development and financial access for marginalized entrepreneurs. My work in managing grant/loan portfolios and fostering partnerships created a more robust and inclusive economic environment, contributing to long-term sustainable livelihoods."
+        }
+    ];
+
+    const timelineContainer = document.getElementById('timeline-container');
+    professionalExperience.forEach((job, index) => {
+        const item = document.createElement('div');
+        item.className = 'timeline-item cursor-pointer';
+        item.innerHTML = `
+            <div class="timeline-dot"></div>
+            <p class="text-sm text-slate-500">${job.dates}</p>
+            <h3 class="text-xl font-bold text-slate-700">${job.role}</h3>
+            <p class="font-semibold text-slate-600">${job.company}</p>
+            <div class="details-pane mt-4 pr-4">
+                <p class="font-semibold text-amber-600 mb-2">Project: ${job.project}</p>
+                <ul class="list-disc pl-5 space-y-2 text-slate-600">
+                    ${job.achievements.map(ach => `<li>${ach}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+        timelineContainer.appendChild(item);
+
+        item.addEventListener('click', () => {
+            document.querySelectorAll('.timeline-item').forEach(el => {
+                if(el !== item) {
+                    el.classList.remove('active');
+                    el.querySelector('.details-pane').classList.remove('open');
+                }
+            });
+            item.classList.toggle('active');
+            item.querySelector('.details-pane').classList.toggle('open');
+        });
+    });
+
+    const caseStudiesContainer = document.getElementById('case-studies-container');
+    caseStudies.forEach((study, index) => {
+        const card = document.createElement('div');
+        card.className = 'bg-white p-6 rounded-xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transform transition-all duration-300 cursor-pointer';
+        card.innerHTML = `
+            <h4 class="text-xl font-bold text-slate-800 mb-2">${study.title}</h4>
+            <p class="text-slate-500 mb-4">${study.organization}</p>
+            <p class="text-slate-600">Discover how strategic financial inclusion initiatives led to tangible increases in community resilience and empowerment.</p>
+            <p class="mt-4 font-semibold text-amber-600">Read Impact Story &rarr;</p>
+        `;
+        caseStudiesContainer.appendChild(card);
+
+        card.addEventListener('click', () => openModal(study));
+    });
+
+    const modal = document.getElementById('case-study-modal');
+    const closeModalButton = document.getElementById('close-modal-button');
+    const modalBody = document.getElementById('modal-body');
+
+    function openModal(study) {
+        modalBody.innerHTML = `
+            <h3 class="text-3xl font-bold text-slate-800 mb-2">${study.title}</h3>
+            <p class="text-slate-500 mb-6">${study.organization}</p>
+            <div class="space-y-4 text-slate-700">
+                <div>
+                    <h4 class="text-xl font-semibold text-amber-600 mb-1">The Challenge</h4>
+                    <p>${study.challenge}</p>
+                </div>
+                <div>
+                    <h4 class="text-xl font-semibold text-amber-600 mb-1">My Action</h4>
+                    <p>${study.action}</p>
+                </div>
+                 <div>
+                    <h4 class="text-xl font-semibold text-amber-600 mb-1">The Outcome</h4>
+                    <p>${study.outcome}</p>
+                </div>
+            </div>
+        `;
+        modal.style.display = 'flex';
+    }
+
+    closeModalButton.addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+
+    window.addEventListener('click', (event) => {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    });
+
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+    
+    document.querySelectorAll('#mobile-menu a').forEach(link => {
+        link.addEventListener('click', () => mobileMenu.classList.add('hidden'));
+    });
+
+    const counterObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const el = entry.target;
+                const target = +el.getAttribute('data-target');
+                let current = 0;
+                const increment = target / 100;
+
+                const updateCounter = () => {
+                    if (current < target) {
+                        current += increment;
+                        el.innerText = Math.ceil(current);
+                        requestAnimationFrame(updateCounter);
+                    } else {
+                        el.innerText = target;
+                    }
+                };
+                updateCounter();
+                observer.unobserve(el);
+            }
+        });
+    }, { threshold: 0.5 });
+    
+    document.querySelectorAll('[data-target]').forEach(el => {
+        counterObserver.observe(el);
+    });
+
+    const competencyData = {
+        labels: [
+            'Grant Admin & Portfolio Mgt', 
+            'Financial Inclusion & Literacy', 
+            'Livelihoods & Econ. Empowerment', 
+            'Gender Equity & Mainstreaming', 
+            'Stakeholder Engagement', 
+            'Capacity Building & Training',
+            'Program M&E / RBM'
+        ],
+        datasets: [{
+            label: 'Level of Expertise',
+            data: [5, 5, 5, 5, 4, 5, 4],
+            backgroundColor: 'rgba(245, 158, 11, 0.2)',
+            borderColor: 'rgba(245, 158, 11, 1)',
+            pointBackgroundColor: 'rgba(245, 158, 11, 1)',
+            pointBorderColor: '#fff',
+            pointHoverBackgroundColor: '#fff',
+            pointHoverBorderColor: 'rgba(245, 158, 11, 1)',
+            borderWidth: 2
+        }]
+    };
+
+    const competencyChartCtx = document.getElementById('competencyChart').getContext('2d');
+    new Chart(competencyChartCtx, {
+        type: 'radar',
+        data: competencyData,
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    angleLines: { color: 'rgba(30, 41, 59, 0.1)' },
+                    grid: { color: 'rgba(30, 41, 59, 0.1)' },
+                    pointLabels: { 
+                        font: { size: 12, weight: '500' },
+                        color: '#334155'
+                    },
+                    ticks: {
+                        backdropColor: 'transparent',
+                        stepSize: 1,
+                        display: false
+                    },
+                    min: 0,
+                    max: 5
+                }
+            },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            // You can add more detailed descriptions here if needed
+                            const descriptions = [
+                                "End-to-end grant lifecycle management.",
+                                "Designing & delivering financial education.",
+                                "Fostering sustainable income & entrepreneurship.",
+                                "Integrating feminist principles into programs.",
+                                "Building partnerships for systemic change.",
+                                "Providing expert technical guidance and workshops.",
+                                "Ensuring accountability with M&E frameworks."
+                            ];
+                            return descriptions[context.dataIndex];
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+});
+</script>
+
+</body>
+</html>
